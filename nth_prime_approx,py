@@ -1,0 +1,70 @@
+"""
+Approximations for the n-th prime.
+"""
+
+import math
+
+def simple_approx(n: int) -> float:
+    """p_n ≈ n ln n"""
+    if n < 2:
+        return 0.0
+    return n * math.log(n)
+
+def refined_approx(n: int) -> float:
+    """p_n ≈ n (ln n + ln ln n - 1)"""
+    if n < 2:
+        return 0.0
+    log_n = math.log(n)
+    log_log_n = math.log(log_n)
+    return n * (log_n + log_log_n - 1)
+
+def upper_bound(n: int) -> float:
+    """Upper bound: n (ln n + ln ln n)"""
+    if n < 2:
+        return 0.0
+    log_n = math.log(n)
+    log_log_n = math.log(log_n)
+    return n * (log_n + log_log_n)
+
+def lower_bound(n: int) -> float:
+    """Lower bound: same as refined_approx."""
+    return refined_approx(n)
+
+def compute_errors(primes):
+    """Print table of approximations vs actual primes."""
+    indices = [10**3, 10**4, 10**5, 10**6]
+    max_n = max(indices)
+    if len(primes) < max_n:
+        print(f"Warning: only {len(primes)} primes available.")
+        indices = [i for i in indices if i <= len(primes)]
+
+    print("\n" + "="*70)
+    print("n-th prime approximations")
+    print("="*70)
+    print(f"{'n':<10} {'p_n':<12} {'n ln n':<12} {'Rel. error':<12} "
+          f"{'Refined':<12} {'Rel. error':<12}")
+    print("-"*70)
+
+    for n in indices:
+        p = primes[n-1]
+        simp = simple_approx(n)
+        simp_rel = (p - simp) / p * 100
+        ref = refined_approx(n)
+        ref_rel = (p - ref) / p * 100
+        print(f"{n:<10} {p:<12} {simp:<12.1f} {simp_rel:>+10.2f}% "
+              f"{ref:<12.1f} {ref_rel:>+10.2f}%")
+
+    # Check Dusart bounds
+    print("\n" + "="*70)
+    print("Dusart bounds check (first 10 primes where n>=6):")
+    print("Lower = n(ln n+ln ln n-1)   Upper = n(ln n+ln ln n)")
+    print("-"*70)
+    for n in range(6, min(16, len(primes)+1)):
+        p = primes[n-1]
+        low = lower_bound(n)
+        upp = upper_bound(n)
+        low_ok = low < p
+        upp_ok = p < upp
+        print(f"n={n:2d}  p={p:6d}  lower={low:8.2f}  {low_ok}  "
+              f"upper={upp:8.2f}  {upp_ok}")
+    print("="*70 + "\n")
